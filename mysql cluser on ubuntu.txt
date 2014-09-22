@@ -1,0 +1,41 @@
+#cai dat goi dpkg
+dpkg -i mysql-server-wsrep-5.6.16-25.5-amd64.deb galera-25.3.5-amd64.deb 
+
+#Cai dat cac goi can cai
+apt-get -f install -y
+
+#cai lai mysql
+dpkg -i mysql-server-wsrep-5.6.16-25.5-amd64.deb galera-25.3.5-amd64.deb 
+
+#create file log mysql
+mkdir -p /var/log/mysql && chown -R mysql. /var/log/mysql
+
+#start service mysql
+/etc/init.d/mysql start
+
+#log in mysql voi user la rong
+mysql -u root
+
+#cau hinh co ban
+
+DELETE FROM mysql.user WHERE user='';
+GRANT USAGE ON *.* TO root@'%' IDENTIFIED BY '123456a@';
+UPDATE mysql.user SET Password=PASSWORD('123456a@') WHERE User='root';
+GRANT USAGE ON *.* to sst@'%' IDENTIFIED BY '123456a@';
+GRANT ALL PRIVILEGES on *.* to sst@'%';
+GRANT ALL PRIVILEGES ON * . * TO  'namnt'@'%' WITH GRANT OPTION MAX_QUERIES_PER_HOUR 0 MAX_CONNECTIONS_PER_HOUR 0 MAX_UPDATES_PER_HOUR 0 MAX_USER_CONNECTIONS 0 ;
+
+#luu y
+#cac tai khoan sst co cung duoc, khong co cung khong sao
+
+#cau hinh file /etc/mysql/conf.d/wsrep.cnf
+
+line 40: wsrep_provider=/usr/lib/galera/libgalera_smm.so
+line 50: - wsrep_cluster_address="gcomm://" (sau gcomm de rong voi master dau tien)
+		 - wsrep_cluster_address="gcomm://ip_may_master" (doi voi cac may muon join vao)
+
+line 30: bind-address=0.0.0.0
+
+#sau do khoi dong lai service mysql may master dau tien (may ma chi de gcomm://
+#Khi master khoi dong xong, thj khoi dong lai service mysql may thu 2
+#khi khoi dong xong may thu 2, vao file /etc/mysql/conf.d/wsrep.cnf chinh lai thong so gcomm:// ve ip cua may mysql con lai roi khoi dong lai service.
